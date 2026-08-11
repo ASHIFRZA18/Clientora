@@ -7,6 +7,7 @@ export function validate(schema: ZodSchema) {
     next();
   };
 }
+<<<<<<< HEAD
 
 export function validateQuery(schema: ZodSchema) {
   return (req: Request, _res: Response, next: NextFunction) => {
@@ -17,3 +18,5 @@ export function validateQuery(schema: ZodSchema) {
     next();
   };
 }
+=======
+>>>>>>> 3584043af0c48b61060f01fbc6bdfa6d9fc4cb46

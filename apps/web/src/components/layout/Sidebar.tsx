@@ -21,8 +21,13 @@ interface NavItem {
 
 const items: NavItem[] = [
   { label: "Dashboard", to: "/", icon: LayoutDashboard },
+<<<<<<< HEAD
   { label: "Customers", to: "/customers", icon: Users },
   { label: "Leads", to: "/leads", icon: Target },
+=======
+  { label: "Customers", to: "/customers", icon: Users, comingSoon: true },
+  { label: "Leads", to: "/leads", icon: Target, comingSoon: true },
+>>>>>>> 3584043af0c48b61060f01fbc6bdfa6d9fc4cb46
   { label: "Pipeline", to: "/pipeline", icon: KanbanSquare, comingSoon: true },
   { label: "Tasks", to: "/tasks", icon: CheckSquare, comingSoon: true },
   {

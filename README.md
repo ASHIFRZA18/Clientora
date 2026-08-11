@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 # Meridian CRM — Phase 1–5: Setup, Auth, Dashboard, Customers & Leads
 
 A monorepo scaffold with the frontend, backend, and database wired end-to-end, complete authentication, a role-aware executive dashboard, full customer management, and lead tracking with scoring and assignment.
+=======
+# Meridian CRM — Phase 1, 2 & 3: Setup, Auth & Dashboard
+
+A monorepo scaffold with the frontend, backend, and database wired end-to-end, complete authentication, and a role-aware executive dashboard.
+>>>>>>> 3584043af0c48b61060f01fbc6bdfa6d9fc4cb46
 
 ## Stack
 
@@ -29,6 +35,7 @@ A `/status` route renders a live **System Status** page that calls `GET /api/v1/
 - **Recent deals**, **today's tasks**, and a **live activity timeline**
 - **Seed script** (`prisma/seed.ts`) populates realistic demo data — three users across all three roles, customers, leads, deals spread across every pipeline stage and the last 6 months, and tasks — so the dashboard isn't empty on first run
 
+<<<<<<< HEAD
 ### Phase 4 — Customers
 - **`GET/POST /api/v1/customers`**, **`GET/PATCH/DELETE /api/v1/customers/:id`**, plus notes at **`/api/v1/customers/:id/notes`** — full CRUD with server-side pagination, search (name/company/email), status filtering, and sorting
 - **Role-scoped at the repository layer**: Sales Executives only ever see, edit, or delete customers they own; trying to access someone else's by ID returns a clean 404, not a 403 that would confirm the record exists
@@ -47,6 +54,9 @@ A `/status` route renders a live **System Status** page that calls `GET /api/v1/
 - Sidebar nav and the dashboard's "New lead" quick action now link to a real, working page
 
 Nav items for Pipeline, Tasks, and Reports are visible but marked "Soon" — they route to real pages starting Phase 6.
+=======
+Nav items for Customers, Leads, Pipeline, Tasks, and Reports are visible but marked "Soon" — they route to real pages starting Phase 4.
+>>>>>>> 3584043af0c48b61060f01fbc6bdfa6d9fc4cb46
 
 ## Setup
 
@@ -104,6 +114,11 @@ Log in with any of the seeded demo accounts (password `Password123`):
 
 | Phase | Scope |
 |---|---|
+<<<<<<< HEAD
+=======
+| 4 | Customers — CRUD, DataTable, filters |
+| 5 | Leads — scoring, assignment |
+>>>>>>> 3584043af0c48b61060f01fbc6bdfa6d9fc4cb46
 | 6 | Pipeline — drag-and-drop Kanban |
 | 7 | Reports — PDF/Excel/CSV export |
 | 8 | Notifications — real-time |
