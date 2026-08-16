@@ -1,8 +1,11 @@
 import type { Role } from "@prisma/client";
 import { leadsRepository, type Scope } from "./leads.repository.js";
 import { calculateLeadScore } from "../../lib/lead-scoring.js";
+<<<<<<< HEAD
 import { getAiLeadInsight } from "./lead-ai-scoring.js";
 import { AiNotConfiguredError, AiRequestError } from "../../lib/anthropic-client.js";
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
 import { ApiError } from "../../middleware/error-handler.js";
 import { notificationsService } from "../notifications/notifications.service.js";
 import type { ListLeadsQuery, CreateLeadInput, UpdateLeadInput } from "./leads.validation.js";
@@ -114,6 +117,7 @@ export const leadsService = {
     if (!lead) throw new ApiError(404, "NOT_FOUND", "Lead not found");
     await leadsRepository.logActivity("lead.deleted", userId, id);
   },
+<<<<<<< HEAD
 
   async getAiInsight(userId: string, role: Role, id: string) {
     const scope = scopeFor(userId, role);
@@ -154,4 +158,6 @@ export const leadsService = {
       throw err;
     }
   },
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
 };

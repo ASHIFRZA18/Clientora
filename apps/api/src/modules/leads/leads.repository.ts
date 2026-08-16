@@ -94,6 +94,7 @@ export const leadsRepository = {
       data: { type, actorId, relatedType: "LEAD", relatedId: leadId, metadata },
     });
   },
+<<<<<<< HEAD
 
   saveAiInsight(
     id: string,
@@ -114,4 +115,6 @@ export const leadsRepository = {
   countCustomerNotes(customerId: string) {
     return prisma.note.count({ where: { relatedType: "CUSTOMER", relatedId: customerId } });
   },
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
 };

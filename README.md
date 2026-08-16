@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Meridian CRM — Phase 1–9: Setup, Auth, Dashboard, Customers, Leads, Pipeline, Reports, Notifications & AI Scoring
+=======
+# Meridian CRM — Phase 1–8: Setup, Auth, Dashboard, Customers, Leads, Pipeline, Reports & Notifications
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
 
 A monorepo scaffold with the frontend, backend, and database wired end-to-end, complete authentication, a role-aware executive dashboard, full customer management, and lead tracking with scoring and assignment.
 
@@ -71,12 +75,15 @@ Nav items for Tasks and Audit Logs are visible but marked "Soon" — they route 
 - Bell icon in the topbar with an unread badge, a dropdown panel, mark-one/mark-all-read, and a 60s polling fallback in case the SSE connection ever drops
 - **Known scope boundary**: "Task due" and "Meeting reminder" notifications from the original feature list aren't wired up yet, since there's no Task/Meeting CRUD module for them to hook into — they're natural candidates once those modules exist
 
+<<<<<<< HEAD
 ### Phase 9 — AI Lead Scoring
 - **`POST /api/v1/leads/:id/score/ai`** calls Claude (Anthropic API, no SDK — a minimal `fetch` wrapper) for a qualitative read on a lead: a 0–100 score, a confidence level, 2–3 sentences of reasoning, and one concrete next action — kept as a distinct `aiScore`/`aiConfidence`/`aiReasoning`/`aiSuggestedAction` set of fields rather than overwriting the rule-based `score` from Phase 5, so the two never silently clobber each other
 - **The rule-based scorer isn't replaced — it's the AI's context.** The prompt includes the deterministic score alongside source, status, deal history, and note count, and explicitly tells the model not to just parrot it back
 - **Fails safe and cheap**: a dedicated rate limiter caps AI calls well below the general API limit, a missing `ANTHROPIC_API_KEY` returns a clean `503 AI_NOT_CONFIGURED` with the exact env var to set (rather than a confusing crash), and a malformed model response is caught and surfaced as a normal error instead of corrupting lead data — the response is validated against a Zod schema before anything is persisted
 - **AI Insight card** in the lead detail drawer: empty state, loading state, error state (with a specific "not configured" message when that's the cause), and a populated state showing the score, confidence badge, reasoning, and suggested action with a re-analyze button
 
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
 ## Setup
 
 ### 1. Install dependencies
@@ -92,8 +99,11 @@ cp apps/api/.env.example apps/api/.env
 # edit DATABASE_URL, and set JWT_ACCESS_SECRET to a long random string
 ```
 
+<<<<<<< HEAD
 AI lead scoring (Phase 9) is optional — leave `ANTHROPIC_API_KEY` blank and everything else works normally; the "Analyze with AI" button just shows a clear "not configured" message instead of a score. Set it to enable real analysis.
 
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
 If you don't have Postgres running locally:
 
 ```bash
@@ -135,4 +145,8 @@ Log in with any of the seeded demo accounts (password `Password123`):
 
 | Phase | Scope |
 |---|---|
+<<<<<<< HEAD
+=======
+| 9 | AI lead scoring |
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
 | 10 | Deployment (Vercel + Railway) |

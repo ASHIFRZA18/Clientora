@@ -118,6 +118,7 @@ model Lead {
   updatedAt  DateTime   @updatedAt
   deletedAt  DateTime?
 
+<<<<<<< HEAD
   // AI-generated insight (Phase 9). Nullable — populated on demand, not on every lead.
   aiScore           Int?
   aiConfidence      String?
@@ -125,6 +126,8 @@ model Lead {
   aiSuggestedAction String?
   aiScoredAt        DateTime?
 
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
   deals Deal[]
 
   @@index([customerId])

@@ -37,8 +37,11 @@ export async function recalculateLeadScore(id: string): Promise<Lead> {
   const { data } = await apiClient.post<{ data: Lead }>(`/leads/${id}/score/recalculate`);
   return data.data;
 }
+<<<<<<< HEAD
 
 export async function getAiLeadInsight(id: string): Promise<LeadDetail> {
   const { data } = await apiClient.post<{ data: LeadDetail }>(`/leads/${id}/score/ai`);
   return data.data;
 }
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672

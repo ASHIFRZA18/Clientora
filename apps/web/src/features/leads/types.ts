@@ -13,6 +13,7 @@ export interface Lead {
   updatedAt: string;
 }
 
+<<<<<<< HEAD
 export type AiConfidence = "low" | "medium" | "high";
 
 export interface LeadDetail extends Lead {
@@ -22,6 +23,10 @@ export interface LeadDetail extends Lead {
   aiReasoning: string | null;
   aiSuggestedAction: string | null;
   aiScoredAt: string | null;
+=======
+export interface LeadDetail extends Lead {
+  deals: { id: string; title: string; stage: string; value: string }[];
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
 }
 
 export interface Paginated<T> {

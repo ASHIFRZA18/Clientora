@@ -8,7 +8,10 @@ import { useLead, useUpdateLead, useAssignLead, useRecalculateLeadScore } from "
 import { leadStatusOptions } from "../schema";
 import { LeadStatusBadge } from "./LeadStatusBadge";
 import { ScoreBar } from "./ScoreBar";
+<<<<<<< HEAD
 import { AiInsightCard } from "./AiInsightCard";
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
 import type { LeadStatus } from "../types";
 
 const stageTone: Record<string, "neutral" | "success" | "warning" | "danger" | "accent"> = {
@@ -79,8 +82,11 @@ export function LeadDetailDrawer({
             <ScoreBar score={lead.score} />
           </div>
 
+<<<<<<< HEAD
           <AiInsightCard lead={lead} />
 
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted uppercase tracking-wide">Status</label>
             <Select

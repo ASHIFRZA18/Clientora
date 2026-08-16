@@ -39,11 +39,14 @@ export const leadsController = {
     res.status(200).json({ data: lead });
   },
 
+<<<<<<< HEAD
   async getAiInsight(req: Request, res: Response) {
     const lead = await leadsService.getAiInsight(req.user!.id, req.user!.role, req.params.id as string);
     res.status(200).json({ data: lead });
   },
 
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
   async remove(req: Request, res: Response) {
     await leadsService.remove(req.user!.id, req.user!.role, req.params.id as string);
     res.status(204).send();

@@ -7,7 +7,10 @@ import {
   deleteLead,
   assignLead,
   recalculateLeadScore,
+<<<<<<< HEAD
   getAiLeadInsight,
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
 } from "./api/leads.api";
 import type { LeadFormValues } from "./schema";
 import type { ListLeadsParams } from "./types";
@@ -76,6 +79,7 @@ export function useRecalculateLeadScore(id: string) {
     },
   });
 }
+<<<<<<< HEAD
 
 export function useAiLeadInsight(id: string) {
   const qc = useQueryClient();
@@ -87,3 +91,5 @@ export function useAiLeadInsight(id: string) {
     },
   });
 }
+=======
+>>>>>>> fb8fa837090b401d0df8bd8364282176ff710672
