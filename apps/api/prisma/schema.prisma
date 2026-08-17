@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SALES_MANAGER
+  SALES_EXECUTIVE
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  DISQUALIFIED
+}
+
+enum DealStage {
+  NEW_LEAD
+  CONTACTED
+  QUALIFIED
+  PROPOSAL_SENT
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum RelatedType {
+  CUSTOMER
+  LEAD
+  DEAL
+  TASK
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String?           
+  googleId     String?  @unique  
+  role         Role     @default(SALES_EXECUTIVE)
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  emailVerifyTokenHash   String?
+  emailVerifyExpires     DateTime?
+  passwordResetTokenHash String?
+  passwordResetExpires   DateTime?
+
+  ownedCustomers Customer[]     @relation("CustomerOwner")
+  assignedLeads  Lead[]         @relation("LeadAssignee")
+  ownedDeals     Deal[]         @relation("DealOwner")
+  tasks          Task[]         @relation("TaskAssignee")
+  notifications  Notification[]
+  activities     Activity[]
+  auditLogs      AuditLog[]
+  notes          Note[]
+  refreshTokens  RefreshToken[]
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  tokenHash     String    @unique
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  replacedById  String?
+  createdByIp   String?
+  createdAt     DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  company   String?
+  email     String?
+  phone     String?
+  status    String   @default("active")
+  ownerId   String
+  owner     User     @relation("CustomerOwner", fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  leads Lead[]
+  deals Deal[]
+
+  @@index([ownerId])
+}
+
+model Lead {
+  id         String     @id @default(cuid())
+  customerId String
+  customer   Customer   @relation(fields: [customerId], references: [id])
+  source     String?
+  score      Int        @default(0)
+  status     LeadStatus @default(NEW)
+  assignedTo String?
+  assignee   User?      @relation("LeadAssignee", fields: [assignedTo], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  deletedAt  DateTime?
+
+  // AI-generated insight (Phase 9). Nullable — populated on demand, not on every lead.
+  aiScore           Int?
+  aiConfidence      String?
+  aiReasoning       String?
+  aiSuggestedAction String?
+  aiScoredAt        DateTime?
+
+  deals Deal[]
+
+  @@index([customerId])
+  @@index([assignedTo])
+}
+
+model Deal {
+  id                String    @id @default(cuid())
+  title             String
+  customerId        String
+  customer          Customer  @relation(fields: [customerId], references: [id])
+  leadId            String?
+  lead              Lead?     @relation(fields: [leadId], references: [id])
+  stage             DealStage @default(NEW_LEAD)
+  order             Int       @default(0)
+  value             Decimal   @db.Decimal(12, 2)
+  currency          String    @default("USD")
+  ownerId           String
+  owner             User      @relation("DealOwner", fields: [ownerId], references: [id])
+  expectedCloseDate DateTime?
+  closedAt          DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  @@index([customerId])
+  @@index([ownerId])
+  @@index([stage])
+}
+
+model Task {
+  id            String      @id @default(cuid())
+  title         String
+  description   String?
+  relatedType   RelatedType?
+  relatedId     String?
+  assignedTo    String
+  assignee      User        @relation("TaskAssignee", fields: [assignedTo], references: [id])
+  dueDate       DateTime?
+  status        TaskStatus  @default(TODO)
+  priority      String      @default("normal")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([assignedTo])
+  @@index([relatedType, relatedId])
+}
+
+model Meeting {
+  id              String   @id @default(cuid())
+  title           String
+  attendees       String[]
+  dealId          String?
+  scheduledAt     DateTime
+  calendarEventId String?
+  createdAt       DateTime @default(now())
+
+  @@index([dealId])
+}
+
+model Note {
+  id          String       @id @default(cuid())
+  body        String
+  authorId    String
+  author      User         @relation(fields: [authorId], references: [id])
+  relatedType RelatedType
+  relatedId   String
+  createdAt   DateTime     @default(now())
+
+  @@index([relatedType, relatedId])
+}
+
+model Activity {
+  id          String       @id @default(cuid())
+  type        String
+  actorId     String
+  actor       User         @relation(fields: [actorId], references: [id])
+  relatedType RelatedType
+  relatedId   String
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+
+  @@index([relatedType, relatedId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  type      String
+  payload   Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  actor      User     @relation(fields: [actorId], references: [id])
+  action     String
+  entityType String
+  entityId   String
+  diff       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
