@@ -1,4 +1,4 @@
-# 🚀 Meridian CRM
+# Clientora CRM Systems
 
 > A full-stack, production-ready CRM built from the ground up — auth, role-based access control, a real-time dashboard, pipeline management, AI-assisted lead scoring, and one-click deploy configs. No boilerplate left half-finished.
 
