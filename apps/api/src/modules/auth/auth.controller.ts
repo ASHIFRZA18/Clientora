@@ -5,8 +5,17 @@ import { getGoogleConsentUrl } from "../../lib/google.js";
 
 export const authController = {
   async register(req: Request, res: Response) {
-    const user = await authService.register(req.body);
-    res.status(201).json({ data: user, message: "Check your email to verify your account" });
+    const { user, devVerificationUrl } = await authService.register(req.body);
+    res
+      .status(201)
+      .json({ data: { user, devVerificationUrl }, message: "Check your email to verify your account" });
+  },
+
+  // NEW
+  async resendVerification(req: Request, res: Response) {
+    const { devVerificationUrl } = await authService.resendVerification(req.body.email);
+    // Same response regardless of whether the account exists or is already verified (prevents enumeration).
+    res.status(200).json({ data: { sent: true, devVerificationUrl } });
   },
 
   async verifyEmail(req: Request, res: Response) {

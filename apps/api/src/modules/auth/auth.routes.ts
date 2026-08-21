@@ -10,6 +10,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   verifyEmailSchema,
+  resendVerificationSchema,
 } from "./auth.validation.js";
 
 export const authRouter = Router();
@@ -25,6 +26,12 @@ const authLimiter = rateLimit({
 
 authRouter.post("/register", authLimiter, validate(registerSchema), asyncHandler(authController.register));
 authRouter.post("/verify-email", validate(verifyEmailSchema), asyncHandler(authController.verifyEmail));
+authRouter.post(
+  "/resend-verification",
+  authLimiter,
+  validate(resendVerificationSchema),
+  asyncHandler(authController.resendVerification)
+);
 authRouter.post("/login", authLimiter, validate(loginSchema), asyncHandler(authController.login));
 authRouter.get("/google", authController.googleRedirect);
 authRouter.get("/google/callback", asyncHandler(authController.googleCallback));

@@ -8,6 +8,7 @@ import {
   verifyEmailRequest,
   forgotPasswordRequest,
   resetPasswordRequest,
+  resendVerificationRequest, // NEW — add this export to ./api/auth.api, see auth.api.patch.md
 } from "./api/auth.api";
 
 export function useRegister() {
@@ -50,4 +51,9 @@ export function useForgotPassword() {
 
 export function useResetPassword() {
   return useMutation({ mutationFn: resetPasswordRequest });
+}
+
+// NEW
+export function useResendVerification() {
+  return useMutation({ mutationFn: resendVerificationRequest });
 }

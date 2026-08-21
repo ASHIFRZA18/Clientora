@@ -15,6 +15,17 @@ function publicUser(user: { id: string; name: string; email: string; role: strin
   return { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified };
 }
 
+// Outside production, the "check your inbox" and "resend" flows also hand
+// back the raw verification link directly, since there's no real mailer
+// wired up yet (see lib/mailer.ts) — this lets the frontend show the link
+// on-screen instead of requiring a dig through server logs. Never runs in
+// production: real deployments should always rely on the actual email.
+function buildDevVerificationUrl(rawToken: string): string | undefined {
+  if (process.env.NODE_ENV === "production") return undefined;
+  const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
+  return `${webOrigin}/verify-email?token=${rawToken}`;
+}
+
 async function issueRefreshToken(userId: string, ip?: string) {
   const raw = generateRawToken();
   await authRepository.createRefreshToken({
@@ -50,10 +61,36 @@ export const authService = {
     await sendEmail({
       to: user.email,
       subject: "Verify your Meridian CRM account",
-      body: `Verify your email: http://localhost:5173/verify-email?token=${rawToken}`,
+      body: `Verify your email: ${buildDevVerificationUrl(rawToken) ?? `http://localhost:5173/verify-email?token=${rawToken}`}`,
     });
 
-    return publicUser(user);
+    return { user: publicUser(user), devVerificationUrl: buildDevVerificationUrl(rawToken) };
+  },
+
+  // NEW — lets a user request a fresh verification email if the first one
+  // never arrived (or expired). Enumeration-safe: resolves the same way
+  // whether or not the email exists, or is already verified, so a caller
+  // can't use this to probe which emails are registered.
+  async resendVerification(email: string) {
+    const user = await authRepository.findByEmail(email);
+    let devVerificationUrl: string | undefined;
+
+    if (user && !user.isVerified) {
+      const rawToken = generateRawToken();
+      await authRepository.setEmailVerifyToken(
+        user.id,
+        hashToken(rawToken),
+        new Date(Date.now() + VERIFY_TOKEN_TTL_MS)
+      );
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your Meridian CRM account",
+        body: `Verify your email: http://localhost:5173/verify-email?token=${rawToken}`,
+      });
+      devVerificationUrl = buildDevVerificationUrl(rawToken);
+    }
+
+    return { devVerificationUrl };
   },
 
   async verifyEmail(token: string) {

@@ -30,5 +30,10 @@ export const verifyEmailSchema = z.object({
   token: z.string().min(1),
 });
 
+// NEW — used by POST /auth/resend-verification
+export const resendVerificationSchema = z.object({
+  email: z.string().email(),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

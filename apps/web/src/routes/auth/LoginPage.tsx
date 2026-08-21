@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Button } from "@/components/ui/Button";
 import { loginFormSchema, type LoginFormValues } from "@/features/auth/schema";
 import { useLogin } from "@/features/auth/hooks";
@@ -45,9 +46,8 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5" noValidate>
         <Input label="Email" type="email" autoComplete="email" {...register("email")} error={errors.email?.message} />
         <div className="space-y-1">
-          <Input
+          <PasswordInput
             label="Password"
-            type="password"
             autoComplete="current-password"
             {...register("password")}
             error={errors.password?.message}
