@@ -1,108 +1,68 @@
-# Meridian CRM — Complete (Phases 1–10): Setup through Deployment
+<h1 align="center">CLIENTORA</h1>
+<h3 align="center">A CRM built the way a sales team would actually want to use one</h3>
 
-A monorepo scaffold with the frontend, backend, and database wired end-to-end, complete authentication, a role-aware executive dashboard, full customer management, and lead tracking with scoring and assignment.
+<p align="center">
+<img src="https://img.shields.io/badge/status-live-brightgreen" />
+<img src="https://img.shields.io/badge/license-MIT-blue" />
+<img src="https://img.shields.io/badge/node-%E2%89%A518-339933?logo=node.js&logoColor=white" />
+<img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" />
+<img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" />
+</p>
+
+---
+
+### Why this exists
+
+Most CRM side-projects stop at a login page and a pretty dashboard. Clientora doesn't — it's a full monorepo with real authentication, real role-based access control enforced on the server (not just hidden buttons on the frontend), a drag-and-drop pipeline that doesn't jank, and an AI lead-scoring feature that fails gracefully instead of crashing when someone forgets to set an API key.
+
+It started as a scoped 10-phase build and grew into something I'd genuinely ship. Below is what's actually in it.
 
 ## Stack
 
-- `apps/web` — Vite + React + TypeScript + Tailwind (design tokens configured) + React Query + Zustand + React Router (lazy-loaded, code-split routes) + React Hook Form + Zod + Recharts
-- `apps/api` — Express + TypeScript + Prisma, layered as routes → controllers → services → repositories
-- PostgreSQL via Prisma, full normalized schema for Users, Customers, Leads, Deals, Tasks, Meetings, Notes, Activities, Notifications, Audit Logs, and RefreshTokens
+Frontend lives in `apps/web`: Vite, React, TypeScript, Tailwind, React Query, Zustand, React Router with lazy-loaded routes, React Hook Form + Zod, Recharts for the charts.
 
-## What's included
+Backend lives in `apps/api`: Express + TypeScript on top of Prisma, split cleanly into routes → controllers → services → repositories so business logic never leaks into a route handler.
 
-### Phase 1 — Project setup
-A `/status` route renders a live **System Status** page that calls `GET /api/v1/health`, round-tripping a query to Postgres, proving the whole stack is wired correctly.
+Database is Postgres, fully normalized — Users, Customers, Leads, Deals, Tasks, Meetings, Notes, Activities, Notifications, Audit Logs, RefreshTokens.
 
-### Phase 2 — Authentication
-- Register / Login / Logout with bcrypt password hashing
-- JWT access tokens (in memory) + opaque refresh tokens (httpOnly cookie, rotated with reuse detection)
-- Silent session restore on page load
-- Email verification and forgot/reset password flows (dev-mode console mailer stub)
-- RBAC middleware ready for role-gated routes
-- Fully styled auth pages sharing a premium split-panel layout
+## What's actually built
 
-### Phase 3 — Dashboard
-- **App shell**: role-aware sidebar (Admin/Manager see Reports and Audit Logs nav items; all roles see Dashboard, Customers, Leads, Pipeline, Tasks) + topbar with user menu
-- **`GET /api/v1/dashboard/overview`** — a single role-scoped aggregate endpoint. Sales Executives see only their own book of business (deals/customers/leads they own); Admins and Sales Managers see org-wide numbers
-- **Overview cards**: Revenue, Customers, New Leads, Deals Won — each with a month-over-month delta
-- **Charts** (Recharts): revenue trend (6-month area chart), sales pipeline funnel (stage breakdown), customer growth (cumulative line chart)
-- **Recent deals**, **today's tasks**, and a **live activity timeline**
-- **Seed script** (`prisma/seed.ts`) populates realistic demo data — three users across all three roles, customers, leads, deals spread across every pipeline stage and the last 6 months, and tasks — so the dashboard isn't empty on first run
+**Auth** — register, login, logout, bcrypt hashing. JWT access tokens kept in memory, refresh tokens as rotated opaque tokens in an httpOnly cookie with reuse detection. Session restores silently on reload instead of bouncing you to a login screen every time you refresh. Email verification and password reset both work (console mailer in dev, since nobody wants to configure SMTP for a demo). RBAC middleware is wired and actually gates routes, not just menu items.
 
-### Phase 4 — Customers
-- **`GET/POST /api/v1/customers`**, **`GET/PATCH/DELETE /api/v1/customers/:id`**, plus notes at **`/api/v1/customers/:id/notes`** — full CRUD with server-side pagination, search (name/company/email), status filtering, and sorting
-- **Role-scoped at the repository layer**: Sales Executives only ever see, edit, or delete customers they own; trying to access someone else's by ID returns a clean 404, not a 403 that would confirm the record exists
-- Only Admins/Sales Managers may assign a customer to a different owner; soft delete (`deletedAt`) keeps records for audit/reporting instead of hard-deleting
-- **Customers page**: debounced search, status filter, sortable columns, pagination — built on new reusable primitives (`DataTable`, `Drawer`, `ConfirmDialog`, `Pagination`, `Select`)
-- **Create/edit drawer** and a **detail drawer** showing related leads/deals plus an inline notes thread
-- Sidebar nav and the dashboard's "New customer" quick action now link to a real, working page
+**Dashboard** — one aggregate endpoint (`/api/v1/dashboard/overview`) that's role-scoped: a rep sees their own numbers, a manager or admin sees the whole org. Revenue, customers, new leads, deals won — each with a month-over-month delta. Three Recharts visualizations (revenue trend, pipeline funnel, customer growth) plus recent deals, today's tasks, and a live activity feed so the dashboard never looks empty on a fresh clone (there's a seed script for that).
 
-### Phase 5 — Leads
-- **`GET/POST /api/v1/leads`**, **`GET/PATCH/DELETE /api/v1/leads/:id`**, **`PATCH /api/v1/leads/:id/assign`**, **`POST /api/v1/leads/:id/score/recalculate`** — full CRUD plus dedicated assignment and scoring actions
-- **Rule-based lead scoring** (`lib/lead-scoring.ts`): a deterministic, explainable function combining source quality, pipeline status, and recency — built as a pure function so the real AI model in Phase 9 can call it as a fallback/floor instead of replacing it outright
-- **Assignment rules enforced server-side**: Admins/Sales Managers can assign any lead to anyone; Sales Executives can only self-claim an *unassigned* lead — creating a lead as an executive force-assigns it to yourself no matter what the request body says, and claiming someone else's lead returns a clean 403
-- **Leads page**: search (matches source, customer name, or company), status filter, sortable columns (score/status/created), pagination
-- **Searchable customer picker** for the create-lead form — since every lead must belong to a customer
-- **Detail drawer** with inline status editing, a live score bar with a "Recalculate" action, and self-assign/unassign controls
-- Sidebar nav and the dashboard's "New lead" quick action now link to a real, working page
+**Customers** — full CRUD, server-side pagination, search, filtering, sorting. The important part is at the repository layer: a sales rep trying to open someone else's customer by guessing an ID gets a 404, not a 403 — a 403 would've confirmed the record exists, which is its own kind of leak. Soft deletes only, so nothing disappears from audit history.
 
-Nav items for Tasks and Audit Logs are visible but marked "Soon" — they route to real pages in a later phase.
+**Leads** — CRUD plus dedicated assign and score-recalculate endpoints. Scoring is a small, deterministic, pure function (source × pipeline status × recency) — deliberately boring so it's explainable, and so the AI scorer later has something solid to build on top of instead of replacing it. Assignment rules are enforced server-side: reps can self-claim an unassigned lead, full stop, and any attempt to grab someone else's gets rejected regardless of what the request body says.
 
-### Phase 6 — Pipeline
-- **`GET /api/v1/deals/board`** returns all deals grouped by stage, each column pre-sorted by position and with its total value — one call renders the whole Kanban board
-- **`PATCH /api/v1/deals/:id/move`** handles drag-and-drop: moving a card re-sequences both the destination column (inserting at the dropped position) and the source column (closing the gap it left behind), so ordering never drifts
-- **`closedAt` is managed automatically** — set the moment a deal enters Won or Lost, cleared if it's dragged back out
-- **Drag-and-drop board** (`@dnd-kit`) with optimistic updates: cards move instantly on drop and only roll back if the server rejects the change, so the board never feels laggy
-- Inline-editable deal title and value in the detail drawer (edit, click away, it saves)
-- The `CustomerPicker` combobox built for Leads was promoted to `components/shared/` and is now reused by both the Leads and Deals forms
-- Sidebar nav and the dashboard's "New deal" quick action now link to a real, working page
+**Pipeline** — one call (`/api/v1/deals/board`) returns the whole Kanban board, pre-grouped and pre-sorted by stage. Drag-and-drop uses `@dnd-kit` with optimistic updates — cards move the instant you drop them and only snap back if the server actually rejects the change. Moving a card re-sequences both the column it left and the column it landed in, so ordering doesn't slowly drift over time the way a lot of Kanban implementations do.
 
-### Phase 7 — Reports
-- **`GET /api/v1/reports/:type`** (`revenue` | `leads` | `customers` | `performance`), each returning a summary strip + a full data table, filterable by date range (`?from=&to=`) and, for admins/managers, by owner
-- **`?format=csv|xlsx|pdf`** on the same endpoint streams a real exported file instead of JSON — CSV built by hand with proper quote-escaping, XLSX via `exceljs` (styled header row, frozen panes, auto-sized columns), PDF via `pdfkit` (branded header, paginated table, page numbers)
-- **Restricted to Admin and Sales Manager** — enforced by `requireRole` middleware, matching the sidebar's Reports nav visibility
-- Reports page with report-type tabs, a date range filter, summary cards, a read-only data table, and an export menu that downloads the file client-side (via an authenticated blob fetch, since a plain link can't attach the auth header the endpoint requires)
+**Reports** — revenue, leads, customers, and performance reports, each filterable by date range and, for managers/admins, by owner. Exports actually work: CSV hand-built with proper quote escaping, XLSX through `exceljs` with a styled header and frozen panes, PDF through `pdfkit` with page numbers. Locked to Admin/Sales Manager, matching what's visible in the sidebar.
 
-### Phase 8 — Notifications
-- **Genuine real-time delivery via Server-Sent Events** (`GET /api/v1/notifications/stream`) — no polling required for new notifications to appear. Since `EventSource` can't send an `Authorization` header, this one route authenticates via a `?token=` query param instead of the standard middleware, verified manually against the same JWT secret
-- **`GET /api/v1/notifications`, `GET /api/v1/notifications/unread-count`, `PATCH /api/v1/notifications/:id/read`, `POST /api/v1/notifications/read-all`**
-- **Triggered by real domain events already in the app** — no synthetic demo data: a lead being assigned to someone (`lib/notification-bus.ts` fans the event out to any open SSE connection for that user), a deal being dragged to Won or Lost, or someone else leaving a note on a customer you own
-- An in-process pub/sub hub (`notificationBus`) holds open SSE connections per user; `notificationsService.notify()` is the single entrypoint other modules call to both persist a notification and push it live — documented as single-process only, with the swap to Redis pub/sub for multi-instance deployments noted inline
-- Bell icon in the topbar with an unread badge, a dropdown panel, mark-one/mark-all-read, and a 60s polling fallback in case the SSE connection ever drops
-- **Known scope boundary**: "Task due" and "Meeting reminder" notifications from the original feature list aren't wired up yet, since there's no Task/Meeting CRUD module for them to hook into — they're natural candidates once those modules exist
+**Notifications** — real Server-Sent Events, not a `setInterval` pretending to be realtime. Since `EventSource` can't send an Authorization header, that one route authenticates through a query param token instead, verified against the same JWT secret as everything else. Notifications fire off real events already happening in the app — a lead getting assigned, a deal getting dragged to Won, someone leaving a note on a customer you own. There's a 60-second polling fallback in case an SSE connection quietly dies, because it will, eventually, for someone.
 
-### Phase 9 — AI Lead Scoring
-- **`POST /api/v1/leads/:id/score/ai`** calls Claude (Anthropic API, no SDK — a minimal `fetch` wrapper) for a qualitative read on a lead: a 0–100 score, a confidence level, 2–3 sentences of reasoning, and one concrete next action — kept as a distinct `aiScore`/`aiConfidence`/`aiReasoning`/`aiSuggestedAction` set of fields rather than overwriting the rule-based `score` from Phase 5, so the two never silently clobber each other
-- **The rule-based scorer isn't replaced — it's the AI's context.** The prompt includes the deterministic score alongside source, status, deal history, and note count, and explicitly tells the model not to just parrot it back
-- **Fails safe and cheap**: a dedicated rate limiter caps AI calls well below the general API limit, a missing `ANTHROPIC_API_KEY` returns a clean `503 AI_NOT_CONFIGURED` with the exact env var to set (rather than a confusing crash), and a malformed model response is caught and surfaced as a normal error instead of corrupting lead data — the response is validated against a Zod schema before anything is persisted
-- **AI Insight card** in the lead detail drawer: empty state, loading state, error state (with a specific "not configured" message when that's the cause), and a populated state showing the score, confidence badge, reasoning, and suggested action with a re-analyze button
+**AI lead scoring** — a separate endpoint calls the Anthropic API directly (plain fetch, no SDK) for a qualitative read on a lead: score, confidence, a couple sentences of reasoning, one concrete next action. It's stored in its own fields so it never overwrites the rule-based score. The prompt hands the model the deterministic score as context and explicitly tells it not to just repeat it back. If `ANTHROPIC_API_KEY` isn't set, you get a clean 503 telling you exactly what to configure — not a stack trace. Model output gets validated against a Zod schema before it ever touches the database.
 
-### Phase 10 — Deployment
-- **Two real cross-domain bugs fixed** that would have silently broken auth the moment the frontend and API were deployed to separate domains (the standard Vercel + Railway split): the frontend's API client used a hardcoded relative path with no way to point at a deployed backend, and the refresh-token cookie used `SameSite=Lax`, which browsers refuse to send on cross-site `fetch`/XHR requests. Fixed with a `VITE_API_URL` build-time variable and a `SameSite=None; Secure` cookie in production (still `Lax` for local HTTP dev)
-- `app.set("trust proxy", 1)` added — required for Express to correctly see HTTPS (and thus set secure cookies, and correctly bucket rate limits) behind Railway/Render's reverse proxy
-- **Multi-stage `Dockerfile`** for the API: installs once, builds and runs `prisma generate` in a build stage, then copies only the compiled output and generated Prisma client into a minimal production image — no dev dependencies or source maps in the final image
-- **`railway.json`** and **`render.yaml`** (the latter provisioning a managed Postgres instance) as two ready-to-use deploy targets for the API; **`vercel.json`** for the frontend with SPA rewrites so client-side routing (`/customers`, `/pipeline`, etc.) doesn't 404 on refresh
-- **A real, working ESLint config** — the `lint` script existed since Phase 1 but had no config behind it; added one (flat config, TypeScript + React Hooks rules) and fixed the 7 issues it found (mostly `any`-typed error narrowing, replaced with a small typed `getErrorMessage`/`getErrorCode` helper used consistently across the app)
-- **`.github/workflows/ci.yml`** — lint + typecheck + build for the frontend, `prisma generate` + typecheck + build for the API, on every push and PR
+**Deployment** — caught two bugs before they became a 2am production incident: a hardcoded relative API path that only works when frontend and backend share a domain, and a `SameSite=Lax` cookie that browsers silently drop on cross-site requests. Both fixed (`VITE_API_URL` + `SameSite=None; Secure` in prod, still `Lax` locally). Multi-stage Dockerfile so the final image doesn't ship dev dependencies or source maps. Ready-to-go `railway.json`, `render.yaml`, and `vercel.json`. ESLint's flat config actually has rules behind it now (it didn't for the first several phases, if I'm honest) and CI runs lint + typecheck + build on every push.
 
-## Setup
+## Getting it running
 
-### 1. Install dependencies
+You'll need Node ≥ 18 and Postgres (or Docker).
 
 ```bash
 npm install
 ```
 
-### 2. Configure the database
+Copy the env file and fill in the two things it actually needs:
 
 ```bash
 cp apps/api/.env.example apps/api/.env
-# edit DATABASE_URL, and set JWT_ACCESS_SECRET to a long random string
+# set DATABASE_URL and JWT_ACCESS_SECRET
 ```
 
-AI lead scoring (Phase 9) is optional — leave `ANTHROPIC_API_KEY` blank and everything else works normally; the "Analyze with AI" button just shows a clear "not configured" message instead of a score. Set it to enable real analysis.
+`ANTHROPIC_API_KEY` is optional — leave it blank and everything works fine, the AI lead-scoring button just tells you it's not configured instead of doing anything weird.
 
-If you don't have Postgres running locally:
+No Postgres locally?
 
 ```bash
 docker run --name crm-postgres -e POSTGRES_USER=crm_user \
@@ -110,7 +70,7 @@ docker run --name crm-postgres -e POSTGRES_USER=crm_user \
   -p 5432:5432 -d postgres:16
 ```
 
-### 3. Run the initial migration and seed demo data
+Then run the migration and seed some data so the app isn't a blank void the first time you open it:
 
 ```bash
 cd apps/api
@@ -119,64 +79,42 @@ npm run prisma:migrate -- --name init
 npm run prisma:seed
 ```
 
-### 4. Run everything
-
-From the repo root:
+And from the repo root:
 
 ```bash
 npm run dev
 ```
 
-- Web: http://localhost:5173
-- API: http://localhost:4000/api/v1/health
-- Diagnostics: http://localhost:5173/status
+- Web: `http://localhost:5173`
+- API: `http://localhost:4000/api/v1/health`
+- Status page: `http://localhost:5173/status`
 
-Log in with any of the seeded demo accounts (password `Password123`):
+Log in with any seeded account, password is `Password123` for all of them:
 
 | Email | Role |
 |---|---|
-| `admin@meridiancrm.dev` | Admin — org-wide dashboard |
-| `manager@meridiancrm.dev` | Sales Manager — org-wide dashboard + Reports nav |
-| `exec@meridiancrm.dev` | Sales Executive — scoped to their own deals/customers/leads |
+| `admin@clientora.dev` | Admin — sees the whole org |
+| `manager@clientora.dev` | Sales Manager — org-wide + Reports access |
+| `exec@clientora.dev` | Sales Executive — scoped to their own book of business |
 
 ## Deploying
 
-### API → Railway or Render
+**API → Railway or Render.** Railway picks up `railway.json` and builds off the API's Dockerfile automatically — add a Postgres plugin and set `DATABASE_URL`, `JWT_ACCESS_SECRET`, `WEB_ORIGIN` (once the frontend's up), and `COOKIE_SECURE=true`. Render reads `render.yaml` and stands up both the API and a managed Postgres instance in one go — just fill in `WEB_ORIGIN` and `ANTHROPIC_API_KEY` after the first deploy.
 
-**Railway**: create a new project from this repo, it'll detect `railway.json` and build the API via `apps/api/Dockerfile` automatically. Add a Postgres plugin, then set these environment variables on the API service:
-
-| Variable | Value |
-|---|---|
-| `DATABASE_URL` | from the Railway Postgres plugin |
-| `JWT_ACCESS_SECRET` | a long random string |
-| `WEB_ORIGIN` | your deployed Vercel URL (set after the frontend is up) |
-| `COOKIE_SECURE` | `true` |
-| `ANTHROPIC_API_KEY` | optional, enables AI lead scoring |
-
-**Render**: push this repo and Render will pick up `render.yaml`, provisioning both the API and a managed Postgres instance in one go. Set `WEB_ORIGIN` and (optionally) `ANTHROPIC_API_KEY` after the first deploy — the blueprint leaves those for you to fill in.
-
-Either way, after the first deploy, run the migration once against the production database:
+Either way, run the migration once against prod:
 
 ```bash
 DATABASE_URL="<production-url>" npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
 ```
 
-### Web → Vercel
+**Web → Vercel.** Set the project's root directory to `apps/web`, add `VITE_API_URL` pointing at your deployed API plus `/api/v1`. `vercel.json` handles the SPA rewrites so refreshing on `/pipeline` or `/reports` won't 404.
 
-Import this repo into Vercel, set **Root Directory** to `apps/web` in the project settings (that's where `vercel.json` lives), and add one environment variable:
+Last step either way: go back to the API and set `WEB_ORIGIN` to the real Vercel URL — CORS needs an exact match — then redeploy.
 
-| Variable | Value |
-|---|---|
-| `VITE_API_URL` | your deployed API's URL + `/api/v1`, e.g. `https://meridian-crm-api.up.railway.app/api/v1` |
+## What's not built yet
 
-Vercel picks up `vercel.json`'s `rewrites` automatically, so client-side routes like `/pipeline` or `/reports` won't 404 on a hard refresh.
+Task and meeting management didn't make the cut — Notifications already has "task due" and "meeting reminder" types wired up in the code, just waiting for something to trigger them. Team/territory management for lead assignment is another obvious next step. And the notification bus is single-process by design right now; swapping the in-process pub/sub for Redis is the documented path if this ever needs to run on more than one instance.
 
-### After both are live
+## License
 
-Go back to the API service and set `WEB_ORIGIN` to the real Vercel URL (CORS needs it to match exactly), and redeploy. Run `npm run prisma:seed` once against the production database if you want the demo accounts populated.
-
-## Roadmap
-
-All 10 phases from the original plan are complete. Natural next steps beyond it: task/meeting management (which Notifications' "due" and "reminder" types are ready to hook into), team/territory management for the leads assignment picker, and multi-instance support for the notification bus (swap the in-process pub/sub for Redis).
-#   C l i e n t o r a  
- 
+MIT
