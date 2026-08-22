@@ -107,7 +107,7 @@ export const customersRepository = {
 
   logActivity(type: string, actorId: string, customerId: string, metadata?: Record<string, unknown>) {
     return prisma.activity.create({
-      data: { type, actorId, relatedType: "CUSTOMER", relatedId: customerId, metadata },
+      data: { type, actorId, relatedType: "CUSTOMER", relatedId: customerId, metadata: metadata as any },
     });
   },
 };

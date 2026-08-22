@@ -35,6 +35,6 @@ export const notificationsRepository = {
   },
 
   create(data: { userId: string; type: string; payload?: Record<string, unknown> }) {
-    return prisma.notification.create({ data });
+    return prisma.notification.create({ data: { ...data, payload: data.payload as any } });
   },
 };

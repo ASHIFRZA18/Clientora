@@ -142,7 +142,7 @@ export const dealsRepository = {
 
   logActivity(type: string, actorId: string, dealId: string, metadata?: Record<string, unknown>) {
     return prisma.activity.create({
-      data: { type, actorId, relatedType: "DEAL", relatedId: dealId, metadata },
+      data: { type, actorId, relatedType: "DEAL", relatedId: dealId, metadata: metadata as any },
     });
   },
 };
