@@ -9,6 +9,7 @@ import { RecentDeals } from "@/features/dashboard/components/RecentDeals";
 import { TasksToday } from "@/features/dashboard/components/TasksToday";
 import { ActivityTimeline } from "@/features/dashboard/components/ActivityTimeline";
 import { QuickActions } from "@/features/dashboard/components/QuickActions";
+import { CRMHero3D } from "@/features/dashboard/components/CRMHero3D";
 
 function DashboardSkeleton() {
   return (
@@ -31,6 +32,8 @@ export default function Dashboard() {
 
   return (
     <AppShell title="Dashboard">
+      <CRMHero3D />
+
       {isLoading && <DashboardSkeleton />}
 
       {isError && (
