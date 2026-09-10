@@ -357,4 +357,3 @@ Issues and PRs are welcome. Please run `npm run lint` and `npm run typecheck` be
 ## 📄 License
 
 MIT © Meridian CRM Contributors
->>>>>>> dd2758680be3fc7070c3941edde461f141959c5f
